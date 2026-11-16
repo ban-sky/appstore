@@ -43,6 +43,10 @@ rmdir "$IMPORT_DIR"
 > `https://github.com/users/ban-sky/packages/container/zerotier/settings` 手动将可见性改为 **Public**，
 > 否则 1Panel 拉取镜像会失败。
 
+> 镜像内为 ZeroTier 官方发布的软件包：ZeroTier Agent 采用 MPL-2.0，上游 `nonfree/` 目录中的控制器等组件采用
+> ZeroTier Source-Available License（非商业用途），商业用途请遵循上游许可证：
+> <https://github.com/zerotier/ZeroTierOne/blob/1.16.2/nonfree/LICENSE.md>。
+
 ## 更新应用版本
 
 1. 新建版本目录，例如 `apps/zerotier-one/1.16.2/`，把 `docker-compose.yml` 中的镜像 tag 改为新版本号；

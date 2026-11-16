@@ -35,3 +35,8 @@ zerotier-cli join [网络ID]
 - 官网: <https://www.zerotier.com>
 - 文档: <https://docs.zerotier.com>
 - 源码: <https://github.com/zerotier/ZeroTierOne>
+
+## 许可证
+- ZeroTier Agent 采用 MPL-2.0 许可证，见上游 `LICENSE-MPL.txt`。
+- 镜像内的网络控制器等组件位于上游 `nonfree/` 目录，采用 ZeroTier Source-Available License（仅限非商业用途），商业用途需向 ZeroTier 获取商业许可。
+- 上游许可证说明: <https://github.com/zerotier/ZeroTierOne/blob/1.16.2/nonfree/LICENSE.md>

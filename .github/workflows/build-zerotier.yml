@@ -86,7 +86,6 @@ jobs:
             org.opencontainers.image.description=ZeroTier One ${{ steps.version.outputs.version }} for 1Panel
             org.opencontainers.image.version=${{ steps.version.outputs.version }}
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-            org.opencontainers.image.licenses=BSL-1.1
 
       - name: Make GHCR package public
         continue-on-error: true
