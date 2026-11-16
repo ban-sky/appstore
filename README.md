@@ -49,7 +49,7 @@ rmdir "$IMPORT_DIR"
 
 ## 更新应用版本
 
-1. 新建版本目录，例如 `apps/zerotier-one/1.16.2/`，把 `docker-compose.yml` 中的镜像 tag 改为新版本号；
+1. 新建版本目录，例如 `apps/zerotier-one/1.16.3/`（以实际版本号为准），把 `docker-compose.yml` 中的镜像 tag 改为新版本号；
 2. 同步 `apps/zerotier-one/latest/`；
 3. 提交并推送到 `main`，GitHub Actions 会自动检测最新的版本目录并构建同 tag 的镜像。
 
