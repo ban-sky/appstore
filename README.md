@@ -1,5 +1,7 @@
 # 1Panel 第三方应用商店（zerotier-one）
 
+[![Build ZeroTier image](https://github.com/ban-sky/appstore/actions/workflows/build-zerotier.yml/badge.svg)](https://github.com/ban-sky/appstore/actions/workflows/build-zerotier.yml)
+
 本仓库沿用 [okxlin/appstore](https://github.com/okxlin/appstore) 的目录结构与 `data.yml` 规范，但**只保留 `zerotier-one` 一个应用**，不包含上游仓库中的其他应用。
 
 ## 应用列表
