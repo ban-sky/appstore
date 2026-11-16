@@ -1,0 +1,107 @@
+name: Build ZeroTier image
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/zerotier-one/**"
+      - ".github/workflows/build-zerotier.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: zerotier-image
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/ban-sky/zerotier
+
+jobs:
+  build:
+    name: Build and push
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve ZeroTier version
+        id: version
+        run: |
+          set -euo pipefail
+          version="$(find apps/zerotier-one -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
+            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1)"
+          test -n "$version"
+          grep -Fq "${IMAGE}:${version}" "apps/zerotier-one/${version}/docker-compose.yml"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "ZeroTier version: ${version}"
+
+      - name: Validate app layout
+        env:
+          ZT_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          for file in data.yml .env.sample; do
+            diff -u "apps/zerotier-one/${ZT_VERSION}/${file}" "apps/zerotier-one/latest/${file}"
+          done
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare build context
+        env:
+          ZT_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p .build
+          base="https://raw.githubusercontent.com/zerotier/ZeroTierOne/${ZT_VERSION}"
+          curl -fsSL "${base}/Dockerfile.release" -o .build/Dockerfile
+          curl -fsSL "${base}/entrypoint.sh.release" -o .build/entrypoint.sh.release
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .build
+          file: .build/Dockerfile
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.version.outputs.version }}
+            ${{ env.IMAGE }}:latest
+          labels: |
+            org.opencontainers.image.title=ZeroTier One
+            org.opencontainers.image.description=ZeroTier One ${{ steps.version.outputs.version }} for 1Panel
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.licenses=BSL-1.1
+
+      - name: Make GHCR package public
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          code="$(curl -sS -o /tmp/package.json -w '%{http_code}' -X PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            "https://api.github.com/user/packages/container/zerotier" \
+            -d '{"visibility":"public"}')"
+          echo "HTTP ${code}"
+          cat /tmp/package.json
+          case "$code" in
+            200|204) ;;
+            *) echo "::warning::无法自动把 GHCR 包设为公开，请在 Packages 设置中手动修改可见性"; exit 1 ;;
+          esac
